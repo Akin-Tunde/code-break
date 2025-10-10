@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, HelpCircle } from "lucide-react";
+import { Home, Trophy, HelpCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", icon: Home, label: "Game" },
   { to: "/leaderboard", icon: Trophy, label: "Leaderboard" },
+  { to: "/profile", icon: User, label: "Profile" },
   { to: "/rules", icon: HelpCircle, label: "Rules" },
 ];
 

@@ -4,6 +4,8 @@ import { NumberPad } from "@/components/game/NumberPad";
 import { Button } from "@/components/ui/button";
 import { DifficultyModal } from "@/components/modals/DifficultyModal";
 import { GameResultModal } from "@/components/modals/GameResultModal";
+import { TreasuryPool } from "@/components/game/TreasuryPool";
+import { RecentActivities } from "@/components/game/RecentActivities";
 import { Play, Clock } from "lucide-react";
 
 type Difficulty = "easy" | "normal" | "hard" | "expert";
@@ -31,6 +33,36 @@ const DIFFICULTY_SETTINGS = {
 export default function GameView() {
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [treasuryAmount] = useState(1247.5);
+  const [recentActivities] = useState([
+    {
+      id: "1",
+      player: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+      difficulty: "Hard",
+      attempts: 7,
+      time: 245,
+      won: true,
+      timestamp: new Date(),
+    },
+    {
+      id: "2",
+      player: "0x8Ba1f109551bD432803012645Ac136ddd64DBA72",
+      difficulty: "Normal",
+      attempts: 10,
+      time: 412,
+      won: false,
+      timestamp: new Date(),
+    },
+    {
+      id: "3",
+      player: "0x1aD91ee08f21bE3dE0BA2ba6918E714dA6B45836",
+      difficulty: "Expert",
+      attempts: 8,
+      time: 189,
+      won: true,
+      timestamp: new Date(),
+    },
+  ]);
   const [gameState, setGameState] = useState<GameState>({
     secretCode: [],
     guesses: [],
@@ -197,8 +229,14 @@ export default function GameView() {
 
   if (!gameState.difficulty) {
     return (
-      <div className="container max-w-md mx-auto px-4 py-8">
-        <div className="text-center space-y-6">
+      <div className="container max-w-4xl mx-auto px-4 py-8">
+        {/* Treasury Pool */}
+        <div className="mb-6">
+          <TreasuryPool amount={treasuryAmount} />
+        </div>
+
+        {/* Welcome Section */}
+        <div className="max-w-md mx-auto text-center space-y-6 mb-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               ChainBreaker
@@ -218,6 +256,11 @@ export default function GameView() {
           </Button>
         </div>
 
+        {/* Recent Activities */}
+        <div className="max-w-2xl mx-auto">
+          <RecentActivities activities={recentActivities} />
+        </div>
+
         <DifficultyModal
           isOpen={showDifficultyModal}
           onClose={() => setShowDifficultyModal(false)}
@@ -228,9 +271,17 @@ export default function GameView() {
   }
 
   return (
-    <div className="container max-w-md mx-auto px-4 py-4 sm:py-6 space-y-4">
-      {/* Game Status Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 sm:p-4 rounded-lg bg-card border border-border">
+    <div className="container max-w-6xl mx-auto px-4 py-4 sm:py-6">
+      {/* Treasury Pool */}
+      <div className="mb-6">
+        <TreasuryPool amount={treasuryAmount} />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Game Section */}
+        <div className="space-y-4">
+          {/* Game Status Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 sm:p-4 rounded-lg bg-card border border-border">
         <div className="text-sm">
           <span className="text-muted-foreground">Tries: </span>
           <span className="font-bold text-primary">
@@ -248,71 +299,78 @@ export default function GameView() {
           <span className="font-bold text-accent capitalize">
             {gameState.difficulty}
           </span>
-        </div>
-      </div>
+          </div>
+          </div>
 
-      {/* Guess History */}
-      <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-muted-foreground">History</h2>
-        <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto pr-2">
+          {/* Guess History */}
+          <div className="space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">History</h2>
+            <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto pr-2">
           {gameState.guesses.map((item, index) => (
             <GuessRow
               key={index}
               guess={item.guess}
               feedback={item.feedback}
             />
-          ))}
-        </div>
-      </div>
+            ))}
+            </div>
+          </div>
 
-      {/* Active Guess Row */}
-      {!gameState.isGameOver && (
-        <div className="space-y-2">
+          {/* Active Guess Row */}
+          {!gameState.isGameOver && (
+            <div className="space-y-2">
           <h2 className="text-sm font-semibold text-muted-foreground">
             Current Guess
           </h2>
-          <GuessRow guess={gameState.currentGuess} isActive />
-        </div>
-      )}
+              <GuessRow guess={gameState.currentGuess} isActive />
+            </div>
+          )}
 
-      {/* Number Pad */}
-      {!gameState.isGameOver && (
-        <NumberPad
+          {/* Number Pad */}
+          {!gameState.isGameOver && (
+            <NumberPad
           onNumberClick={handleNumberClick}
           onDelete={handleDelete}
           onSubmit={handleSubmit}
-          canSubmit={gameState.currentGuess.length === 4}
-        />
-      )}
+              canSubmit={gameState.currentGuess.length === 4}
+            />
+          )}
 
-      {/* New Game Button (shown when game is over) */}
-      {gameState.isGameOver && (
-        <Button
+          {/* New Game Button (shown when game is over) */}
+          {gameState.isGameOver && (
+            <Button
           onClick={handlePlayAgain}
           size="lg"
           className="gradient-primary glow-primary w-full h-14"
         >
-          <Play className="mr-2 h-5 w-5" />
-          Play Again
-        </Button>
-      )}
+              <Play className="mr-2 h-5 w-5" />
+              Play Again
+            </Button>
+          )}
 
-      {/* Modals */}
-      <DifficultyModal
-        isOpen={showDifficultyModal}
-        onClose={() => setShowDifficultyModal(false)}
-        onSelect={startNewGame}
-      />
+          {/* Modals */}
+          <DifficultyModal
+            isOpen={showDifficultyModal}
+            onClose={() => setShowDifficultyModal(false)}
+            onSelect={startNewGame}
+          />
 
-      <GameResultModal
-        isOpen={showResultModal}
-        onClose={() => setShowResultModal(false)}
-        isWon={gameState.isWon}
-        attempts={gameState.guesses.length}
-        secretCode={gameState.secretCode}
-        elapsedTime={gameState.elapsedTime}
-        onPlayAgain={handlePlayAgain}
-      />
+          <GameResultModal
+            isOpen={showResultModal}
+            onClose={() => setShowResultModal(false)}
+            isWon={gameState.isWon}
+            attempts={gameState.guesses.length}
+            secretCode={gameState.secretCode}
+            elapsedTime={gameState.elapsedTime}
+            onPlayAgain={handlePlayAgain}
+          />
+        </div>
+
+        {/* Recent Activities Section */}
+        <div>
+          <RecentActivities activities={recentActivities} />
+        </div>
+      </div>
     </div>
   );
 }
