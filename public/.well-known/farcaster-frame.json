@@ -1,0 +1,18 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjMyMDI2NCwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDFGMkE1MkYwZjlDZDYwZGY4RDAwNTdjNGE1YTEwRUFlNjQyNjNCNDgifQ",
+    "payload": "eyJkb21haW4iOiJtYWJyZWFrZXIubmV0bGlmeS5hcHAifQ",
+    "signature": "MHgzZDUyZTI4NDI3N2E2ZjM4NzQ0YjNhZjI2YjcwNWFhMTI4MWQ0NWY1NzBhM2Q5NWFkOWJiNzIzOWI2OGIyMjYzMDFjMmNiNjBlOWE1YmIzMGQ4NTIzOTg3NTYwZGZkMWQ4YjRiM2ZkMTZjYjIzZDJkNzQ4YjA0ZWI0NmMxMTRhNTFj"
+  },
+  "frame": {
+    "version": "1",
+    "name": "ChainBreaker Game",
+    "iconUrl": "https://mabreaker.netlify.app/icon.png",
+    "homeUrl": "https://mabreaker.netlify.app",
+    "imageUrl": "https://mabreaker.netlify.app/image.png",
+    "buttonTitle": "Play ChainBreaker",
+    "splashImageUrl": "https://mabreaker.netlify.app/splash.png",
+    "splashBackgroundColor": "#270080",
+    "webhookUrl": "https://mabreaker.netlify.app/api/webhook"
+  }
+}

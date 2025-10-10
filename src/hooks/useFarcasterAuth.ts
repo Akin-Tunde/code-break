@@ -1,142 +1,77 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
+import { isFarcasterFrame, getFarcasterUserData, FARCASTER_CONFIG } from '@/config/farcaster'
 
-interface FarcasterAuthState {
-  isAutoConnecting: boolean
-  isFarcasterEnvironment: boolean
-  isFarcasterConnected: boolean
-  error: string | null
+interface FarcasterUser {
+  fid: number
+  username?: string
+  displayName?: string
+  pfpUrl?: string
+  custody?: string
+  isVerified: boolean
 }
 
-// Safe AppKit access
-const getAppKit = () => {
-  try {
-    if (typeof window !== 'undefined' && window.appkit) {
-      return window.appkit
-    }
-    return null
-  } catch (error) {
-    console.warn('AppKit not available:', error)
-    return null
-  }
+interface FarcasterAuthState {
+  isDetecting: boolean
+  isFarcasterUser: boolean
+  farcasterData: FarcasterUser | null
+  isAutoConnecting: boolean
+  error: string | null
+  isFrameEnvironment: boolean
 }
 
 export const useFarcasterAuth = () => {
-  const { address, isConnected, connector } = useAccount()
+  const { address, isConnected } = useAccount()
   
   const [authState, setAuthState] = useState<FarcasterAuthState>({
+    isDetecting: false,
+    isFarcasterUser: false,
+    farcasterData: null,
     isAutoConnecting: false,
-    isFarcasterEnvironment: false,
-    isFarcasterConnected: false,
-    error: null
+    error: null,
+    isFrameEnvironment: false
   })
 
-  // Check if user is in Farcaster environment
-  const checkFarcasterEnvironment = () => {
-    if (typeof window === 'undefined') return false
-
-    const userAgent = navigator.userAgent.toLowerCase()
-    const hostname = window.location.hostname.toLowerCase()
+  // Check if we're in a Farcaster Frame environment
+  useEffect(() => {
+    const isFrame = isFarcasterFrame()
+    setAuthState(prev => ({ ...prev, isFrameEnvironment: isFrame }))
     
-    // Check for various Farcaster indicators
-    const isFarcasterApp = 
-      userAgent.includes('farcaster') || 
-      userAgent.includes('warpcast') ||
-      hostname.includes('warpcast') ||
-      hostname.includes('farcaster') ||
-      // Check for Farcaster Frame context
-      !!(window as any).parent?.postMessage ||
-      // Check for specific Farcaster client indicators
-      !!(window as any).fc ||
-      !!(window as any).farcaster ||
-      // Check URL parameters that might indicate Farcaster
-      window.location.search.includes('farcaster') ||
-      window.location.hash.includes('farcaster')
-
-    return isFarcasterApp
-  }
-
-  // Check if connected via Farcaster social login
-  const checkFarcasterConnection = () => {
-    if (!isConnected || !connector) return false
-    
-    // Check if connection method indicates social login
-    const connectorName = connector.name?.toLowerCase() || ''
-    const connectorId = connector.id?.toLowerCase() || ''
-    
-    // WalletConnect AppKit uses these identifiers for social logins
-    return connectorName.includes('farcaster') || 
-           connectorId.includes('farcaster') ||
-           connectorName.includes('social') ||
-           connectorId.includes('social')
-  }
-
-  // Auto-connect if in Farcaster environment
-  const autoConnectFarcaster = async () => {
-    const isFarcasterEnv = checkFarcasterEnvironment()
-    
-    setAuthState(prev => ({ 
-      ...prev, 
-      isFarcasterEnvironment: isFarcasterEnv,
-      isAutoConnecting: isFarcasterEnv && !isConnected 
-    }))
-
-    if (isFarcasterEnv && !isConnected) {
-      try {
-        const appkit = getAppKit()
-        if (appkit) {
-          // Small delay to ensure DOM is ready
-          setTimeout(() => {
-            appkit.open()
-          }, 1000)
-        }
-      } catch (error) {
-        console.error('Auto-connect error:', error)
+    if (isFrame) {
+      // If we're in a Frame, try to get user data from the frame config
+      const userData = getFarcasterUserData()
+      if (userData) {
         setAuthState(prev => ({
           ...prev,
-          isAutoConnecting: false,
-          error: 'Failed to auto-connect'
+          isFarcasterUser: true,
+          farcasterData: {
+            fid: userData.fid,
+            isVerified: userData.isVerified,
+            displayName: `User ${userData.fid}`,
+            username: `fid${userData.fid}`
+          }
         }))
       }
     }
-  }
-
-  // Manual connect function
-  const connectWithFarcaster = () => {
-    try {
-      const appkit = getAppKit()
-      if (appkit) {
-        // Open modal with focus on social logins
-        appkit.open({ view: 'Connect' })
-      }
-    } catch (error) {
-      console.error('Connect error:', error)
-      setAuthState(prev => ({
-        ...prev,
-        error: 'Failed to open connection modal'
-      }))
-    }
-  }
-
-  // Auto-connect on page load if in Farcaster environment
-  useEffect(() => {
-    autoConnectFarcaster()
   }, [])
 
-  // Update connection state when connection changes
+  // Auto-connect in Farcaster Frame environment
   useEffect(() => {
-    const isFarcasterConn = checkFarcasterConnection()
-    
-    setAuthState(prev => ({ 
-      ...prev, 
-      isFarcasterConnected: isFarcasterConn,
-      isAutoConnecting: isConnected ? false : prev.isAutoConnecting
-    }))
-  }, [isConnected, connector])
+    if (authState.isFrameEnvironment && !isConnected) {
+      setAuthState(prev => ({ ...prev, isAutoConnecting: true }))
+      
+      // In a Frame environment, attempt auto-connect
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && (window as any).ethereum) {
+          // Trigger wallet connection
+          setAuthState(prev => ({ ...prev, isAutoConnecting: false }))
+        }
+      }, 1000)
+    }
+  }, [authState.isFrameEnvironment, isConnected])
 
   return {
     ...authState,
-    autoConnectFarcaster,
-    connectWithFarcaster
+    frameConfig: FARCASTER_CONFIG.frame
   }
 }
