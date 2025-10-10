@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { isFarcasterFrame, getFarcasterUserData, FARCASTER_CONFIG } from '@/config/farcaster'
+import { useFarcasterMiniApp } from '@/providers/FarcasterProvider'
 
 interface FarcasterUser {
   fid: number
@@ -18,10 +19,12 @@ interface FarcasterAuthState {
   isAutoConnecting: boolean
   error: string | null
   isFrameEnvironment: boolean
+  isMiniApp: boolean
 }
 
 export const useFarcasterAuth = () => {
   const { address, isConnected } = useAccount()
+  const { isReady, user: miniAppUser } = useFarcasterMiniApp()
   
   const [authState, setAuthState] = useState<FarcasterAuthState>({
     isDetecting: false,
@@ -29,16 +32,36 @@ export const useFarcasterAuth = () => {
     farcasterData: null,
     isAutoConnecting: false,
     error: null,
-    isFrameEnvironment: false
+    isFrameEnvironment: false,
+    isMiniApp: false
   })
 
-  // Check if we're in a Farcaster Frame environment
+  // Check if we're in a Farcaster Frame environment or Mini App
   useEffect(() => {
     const isFrame = isFarcasterFrame()
-    setAuthState(prev => ({ ...prev, isFrameEnvironment: isFrame }))
+    const isMiniAppEnvironment = isReady && !!miniAppUser
     
-    if (isFrame) {
-      // If we're in a Frame, try to get user data from the frame config
+    setAuthState(prev => ({ 
+      ...prev, 
+      isFrameEnvironment: isFrame,
+      isMiniApp: isMiniAppEnvironment
+    }))
+    
+    // Prioritize Mini App user data
+    if (isMiniAppEnvironment && miniAppUser) {
+      setAuthState(prev => ({
+        ...prev,
+        isFarcasterUser: true,
+        farcasterData: {
+          fid: miniAppUser.fid,
+          username: miniAppUser.username,
+          displayName: miniAppUser.displayName,
+          pfpUrl: miniAppUser.pfpUrl,
+          isVerified: true
+        }
+      }))
+    } else if (isFrame) {
+      // Fallback to Frame config data
       const userData = getFarcasterUserData()
       if (userData) {
         setAuthState(prev => ({
@@ -53,14 +76,14 @@ export const useFarcasterAuth = () => {
         }))
       }
     }
-  }, [])
+  }, [isReady, miniAppUser])
 
-  // Auto-connect in Farcaster Frame environment
+  // Auto-connect in Farcaster environments
   useEffect(() => {
-    if (authState.isFrameEnvironment && !isConnected) {
+    if ((authState.isFrameEnvironment || authState.isMiniApp) && !isConnected) {
       setAuthState(prev => ({ ...prev, isAutoConnecting: true }))
       
-      // In a Frame environment, attempt auto-connect
+      // In a Farcaster environment, attempt auto-connect
       setTimeout(() => {
         if (typeof window !== 'undefined' && (window as any).ethereum) {
           // Trigger wallet connection
@@ -68,10 +91,11 @@ export const useFarcasterAuth = () => {
         }
       }, 1000)
     }
-  }, [authState.isFrameEnvironment, isConnected])
+  }, [authState.isFrameEnvironment, authState.isMiniApp, isConnected])
 
   return {
     ...authState,
-    frameConfig: FARCASTER_CONFIG.frame
+    frameConfig: FARCASTER_CONFIG.frame,
+    miniAppUser
   }
 }
