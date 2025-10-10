@@ -1,8 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Trophy, Clock, Target, TrendingUp, Award, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Clock, Target, TrendingUp, Award, User, Wallet, Copy, ExternalLink, CheckCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { useWallet } from "@/hooks/useWallet";
+import { useFarcasterAuth } from "@/hooks/useFarcasterAuth";
+import { FarcasterStatus } from "@/components/ui/FarcasterStatus";
+import { toast } from "sonner";
 
 interface UserActivity {
   id: string;
@@ -85,12 +91,57 @@ const formatDate = (date: Date): string => {
 };
 
 export default function ProfileView() {
+  const { address, isConnected, balance, connect, formatAddress, formatBalance } = useWallet();
+  const { 
+    isFarcasterEnvironment, 
+    isFarcasterConnected, 
+    connectWithFarcaster 
+  } = useFarcasterAuth();
+  
   const totalGames = mockUserActivities.length;
   const gamesWon = mockUserActivities.filter((a) => a.won).length;
   const winRate = Math.round((gamesWon / totalGames) * 100);
   const avgTime = Math.round(
     mockUserActivities.reduce((acc, a) => acc + a.time, 0) / totalGames
   );
+
+  const copyAddress = () => {
+    if (address) {
+      navigator.clipboard.writeText(address);
+      toast.success("Address copied to clipboard!");
+    }
+  };
+
+  const openExplorer = () => {
+    if (address) {
+      window.open(`https://etherscan.io/address/${address}`, '_blank');
+    }
+  };
+
+  // If wallet not connected, show connect prompt
+  if (!isConnected) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6">
+          <div className="w-20 h-20 rounded-full gradient-primary flex items-center justify-center">
+            <Wallet className="w-10 h-10 text-white" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Connect Your Wallet
+            </h1>
+            <p className="text-muted-foreground max-w-md">
+              Connect your wallet to view your profile, game statistics, and manage your ChainBreaker achievements.
+            </p>
+          </div>
+          <Button onClick={connect} className="gradient-primary glow-primary px-8 py-2">
+            <Wallet className="w-4 h-4 mr-2" />
+            Connect Wallet
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -100,34 +151,63 @@ export default function ProfileView() {
           <div className="relative">
             <Avatar className="h-16 w-16 border-2 border-primary/20 hover:border-primary/40 transition-colors cursor-pointer">
               <AvatarImage 
-                src="/api/placeholder/64/64" 
+                src={`https://api.dicebear.com/7.x/identicon/svg?seed=${address}`}
                 alt="Profile Avatar"
               />
               <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-lg font-bold">
-                {mockUserProfile.username.slice(0, 2).toUpperCase()}
+                {address ? formatAddress(address).slice(0, 2).toUpperCase() : 'CB'}
               </AvatarFallback>
             </Avatar>
             {/* Online status indicator */}
             <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-background rounded-full"></div>
+            {isFarcasterConnected && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 border-2 border-background rounded-full flex items-center justify-center">
+                <CheckCircle className="h-3 w-3 text-white" />
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                {mockUserProfile.username}
+                CodeMaster
               </h1>
-              <div className="px-2 py-1 rounded-full bg-accent/20 text-accent text-xs font-semibold">
-                Rank #{mockUserProfile.rank}
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="bg-green-500/20 text-green-300">
+                  Connected
+                </Badge>
+                {isFarcasterConnected && (
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
+                    Farcaster
+                  </Badge>
+                )}
+                <FarcasterStatus />
               </div>
             </div>
-            <p className="text-muted-foreground mb-2 font-mono text-sm">
-              {mockUserProfile.address.slice(0, 6)}...{mockUserProfile.address.slice(-4)}
-            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-muted-foreground font-mono text-sm">
+                  {address ? formatAddress(address) : 'No address'}
+                </p>
+                <Button variant="ghost" size="sm" onClick={copyAddress} className="h-6 w-6 p-0">
+                  <Copy className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={openExplorer} className="h-6 w-6 p-0">
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
-              <span>Joined {mockUserProfile.joinDate.toLocaleDateString()}</span>
+              {balance && (
+                <>
+                  <span>Balance: <span className="text-primary font-medium">
+                    {formatBalance(balance.value, balance.decimals)} {balance.symbol}
+                  </span></span>
+                  <span className="hidden sm:inline">•</span>
+                </>
+              )}
+              <span>Network: <span className="text-accent font-medium">Ethereum</span></span>
               <span className="hidden sm:inline">•</span>
-              <span>Favorite: <span className="text-accent font-medium">{mockUserProfile.favoriteMode}</span> Mode</span>
-              <span className="hidden sm:inline">•</span>
-              <span>Score: <span className="text-primary font-medium">{mockUserProfile.totalScore.toLocaleString()}</span></span>
+              <span>Score: <span className="text-primary font-medium">1,247</span></span>
             </div>
           </div>
         </div>

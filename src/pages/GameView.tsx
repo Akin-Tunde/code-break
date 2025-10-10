@@ -87,7 +87,7 @@ export default function GameView() {
 
   // Countdown timer effect
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     
     if (gameState.startTime && !gameState.isGameOver && gameState.difficulty) {
       interval = setInterval(() => {
