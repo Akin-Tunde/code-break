@@ -62,6 +62,15 @@ export default function GameView() {
       won: true,
       timestamp: new Date(),
     },
+    {
+      id: "4",
+      player: "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c",
+      difficulty: "Easy",
+      attempts: 5,
+      time: 156,
+      won: true,
+      timestamp: new Date(),
+    },
   ]);
   const [gameState, setGameState] = useState<GameState>({
     secretCode: [],
@@ -78,7 +87,7 @@ export default function GameView() {
 
   // Countdown timer effect
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
     
     if (gameState.startTime && !gameState.isGameOver && gameState.difficulty) {
       interval = setInterval(() => {
@@ -256,7 +265,7 @@ export default function GameView() {
           </Button>
         </div>
 
-        {/* Recent Activities */}
+        {/* Recent Activities - Only show when no game is active */}
         <div className="max-w-2xl mx-auto">
           <RecentActivities activities={recentActivities} />
         </div>
@@ -364,11 +373,6 @@ export default function GameView() {
             elapsedTime={gameState.elapsedTime}
             onPlayAgain={handlePlayAgain}
           />
-        </div>
-
-        {/* Recent Activities Section */}
-        <div>
-          <RecentActivities activities={recentActivities} />
         </div>
       </div>
     </div>

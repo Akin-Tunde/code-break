@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Clock, Target, TrendingUp, Award } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Trophy, Clock, Target, TrendingUp, Award, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface UserActivity {
@@ -55,6 +56,16 @@ const mockUserActivities: UserActivity[] = [
   },
 ];
 
+// Mock user profile data
+const mockUserProfile = {
+  address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+  username: "CodeMaster",
+  joinDate: new Date(2025, 8, 15), // September 15, 2025
+  favoriteMode: "Hard",
+  rank: 3,
+  totalScore: 1247
+};
+
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -85,13 +96,40 @@ export default function ProfileView() {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Your Profile
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your progress and achievements
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Avatar className="h-16 w-16 border-2 border-primary/20 hover:border-primary/40 transition-colors cursor-pointer">
+              <AvatarImage 
+                src="/api/placeholder/64/64" 
+                alt="Profile Avatar"
+              />
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary text-lg font-bold">
+                {mockUserProfile.username.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {/* Online status indicator */}
+            <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-background rounded-full"></div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {mockUserProfile.username}
+              </h1>
+              <div className="px-2 py-1 rounded-full bg-accent/20 text-accent text-xs font-semibold">
+                Rank #{mockUserProfile.rank}
+              </div>
+            </div>
+            <p className="text-muted-foreground mb-2 font-mono text-sm">
+              {mockUserProfile.address.slice(0, 6)}...{mockUserProfile.address.slice(-4)}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
+              <span>Joined {mockUserProfile.joinDate.toLocaleDateString()}</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Favorite: <span className="text-accent font-medium">{mockUserProfile.favoriteMode}</span> Mode</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Score: <span className="text-primary font-medium">{mockUserProfile.totalScore.toLocaleString()}</span></span>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}

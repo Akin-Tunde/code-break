@@ -20,42 +20,56 @@ export const ScoreRow = ({ rank, address, attempts, time }: ScoreRowProps) => {
   };
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-warning" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-muted-foreground" />;
-    if (rank === 3) return <Award className="h-5 w-5 text-accent" />;
+    if (rank === 1) return <Trophy className="h-4 w-4 text-warning" />;
+    if (rank === 2) return <Medal className="h-4 w-4 text-muted-foreground" />;
+    if (rank === 3) return <Award className="h-4 w-4 text-accent" />;
     return null;
+  };
+
+  const getRankBadge = (rank: number) => {
+    if (rank === 1) return "bg-warning/20 text-warning border-warning/30";
+    if (rank === 2) return "bg-muted-foreground/20 text-muted-foreground border-muted-foreground/30";
+    if (rank === 3) return "bg-accent/20 text-accent border-accent/30";
+    return "bg-muted/20 text-muted-foreground border-muted/30";
   };
 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-x-4 gap-y-3 p-3 sm:p-4 rounded-lg border transition-smooth hover:bg-card/50",
-        rank === 1 && "border-warning bg-warning/5",
-        rank === 2 && "border-muted-foreground bg-muted/5",
-        rank === 3 && "border-accent bg-accent/5",
-        rank > 3 && "border-border bg-card"
+        "flex flex-col p-3 rounded-lg bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors",
+        rank === 1 && "border-warning/30 bg-warning/5",
+        rank === 2 && "border-muted-foreground/30 bg-muted/5",
+        rank === 3 && "border-accent/30 bg-accent/5"
       )}
     >
-      {/* Left side: Rank and Address */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted font-bold">
+      {/* Rank and Player */}
+      <div className="flex items-center gap-2 mb-2">
+        <div className={cn(
+          "flex items-center justify-center w-8 h-8 rounded-lg border font-bold text-xs",
+          getRankBadge(rank)
+        )}>
           {getRankIcon(rank) || `#${rank}`}
         </div>
-        <div className="font-mono text-sm">{formatAddress(address)}</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-xs font-semibold truncate text-foreground">
+            {formatAddress(address)}
+          </p>
+        </div>
       </div>
 
-      {/* Right side: Stats */}
-      <div className="flex w-full sm:w-auto justify-end border-t border-border pt-3 sm:border-none sm:pt-0 gap-4">
-        <div className="text-right flex-1 sm:flex-initial">
-          <div className="text-xs text-muted-foreground">Attempts</div>
-          <div className="text-sm font-bold text-primary">{attempts}</div>
+      {/* Stats */}
+      <div className="space-y-1">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>Attempts</span>
+          <span className="font-bold text-primary">{attempts}</span>
         </div>
-        <div className="text-right flex-1 sm:flex-initial">
-          <div className="text-xs text-muted-foreground flex items-center justify-end sm:justify-start gap-1">
-            <Clock className="h-3 w-3" />
-            Time
+        
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span>Time</span>
           </div>
-          <div className="text-sm font-bold text-secondary font-mono">{formatTime(time)}</div>
+          <span className="font-bold text-secondary font-mono">{formatTime(time)}</span>
         </div>
       </div>
     </div>
