@@ -78,24 +78,27 @@ export const useFarcasterAuth = () => {
     }
   }, [isReady, miniAppUser])
 
-  // Auto-connect in Farcaster environments
-  useEffect(() => {
-    if ((authState.isFrameEnvironment || authState.isMiniApp) && !isConnected) {
+  // Manual connect function for Farcaster environments
+  const connectWithFarcaster = () => {
+    if (authState.isFrameEnvironment || authState.isMiniApp) {
       setAuthState(prev => ({ ...prev, isAutoConnecting: true }))
       
-      // In a Farcaster environment, attempt auto-connect
+      // Open wallet connection modal
+      if (typeof window !== 'undefined' && window.appkit) {
+        window.appkit.open()
+      }
+      
+      // Reset auto-connecting state after a delay
       setTimeout(() => {
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
-          // Trigger wallet connection
-          setAuthState(prev => ({ ...prev, isAutoConnecting: false }))
-        }
-      }, 1000)
+        setAuthState(prev => ({ ...prev, isAutoConnecting: false }))
+      }, 3000)
     }
-  }, [authState.isFrameEnvironment, authState.isMiniApp, isConnected])
+  }
 
   return {
     ...authState,
     frameConfig: FARCASTER_CONFIG.frame,
-    miniAppUser
+    miniAppUser,
+    connectWithFarcaster
   }
 }

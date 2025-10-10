@@ -16,7 +16,7 @@ export default function RulesView() {
           <CardTitle>Objective</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
-          <p>
+          <p className="text-sm">
             Your goal is to crack a secret 4-digit code by making strategic guesses.
             After each guess, you'll receive feedback to help you narrow down the
             possibilities.
@@ -31,14 +31,14 @@ export default function RulesView() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <h3 className="font-semibold text-foreground">1. Make Your Guess</h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Select 4 numbers from 0-9 using the number pad. Click Submit when ready.
             </p>
           </div>
 
           <div className="space-y-2">
             <h3 className="font-semibold text-foreground">2. Read the Feedback</h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               After each guess, you'll see colored pegs that give you clues:
             </p>
             <div className="space-y-2 pl-4">
@@ -65,7 +65,7 @@ export default function RulesView() {
 
           <div className="space-y-2">
             <h3 className="font-semibold text-foreground">3. Use Logic</h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Use the feedback from each guess to eliminate possibilities and refine
               your next attempt. Keep guessing until you crack the code or run out of
               attempts!
@@ -125,7 +125,7 @@ export default function RulesView() {
         <CardHeader>
           <CardTitle className="text-primary">Pro Tip</CardTitle>
         </CardHeader>
-        <CardContent className="text-muted-foreground">
+        <CardContent className="text-sm text-muted-foreground">
           Start with guesses that test different numbers to gather maximum information.
           A methodical approach beats random guessing every time!
         </CardContent>

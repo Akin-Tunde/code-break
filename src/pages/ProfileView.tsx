@@ -257,17 +257,17 @@ export default function ProfileView() {
 
         {/* Activity Tabs */}
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All Games</TabsTrigger>
-            <TabsTrigger value="won">Won</TabsTrigger>
-            <TabsTrigger value="lost">Lost</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 text-sm">
+            <TabsTrigger value="all" className="text-sm">All Games</TabsTrigger>
+            <TabsTrigger value="won" className="text-sm">Won</TabsTrigger>
+            <TabsTrigger value="lost" className="text-sm">Lost</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" />
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Award className="w-4 h-4 text-primary" />
                   Game History
                 </CardTitle>
               </CardHeader>

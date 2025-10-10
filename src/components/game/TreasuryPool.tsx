@@ -15,8 +15,8 @@ export const TreasuryPool = ({ amount }: TreasuryPoolProps) => {
               <Coins className="w-6 h-6 text-primary-glow" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Treasury Pool</p>
-              <p className="text-2xl font-bold text-foreground">{amount.toLocaleString()} ETH</p>
+              <p className="text-xs text-muted-foreground">Treasury Pool</p>
+              <p className="text-xl font-bold text-foreground">{amount.toLocaleString()} ETH</p>
             </div>
           </div>
           <div className="text-right">

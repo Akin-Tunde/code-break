@@ -1,21 +1,19 @@
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi'
+import { useAccount, useDisconnect, useBalance } from 'wagmi'
+import { useAppKit } from '@reown/appkit/react'
 
 export const useWallet = () => {
   const { address, isConnected, isConnecting } = useAccount()
   const { disconnect } = useDisconnect()
+  const { open } = useAppKit()
   
   const { data: balance } = useBalance({
     address: address,
   })
 
-  // Use the global AppKit instance safely
+  // Use the AppKit hook for connection
   const connect = () => {
     try {
-      if (typeof window !== 'undefined' && window.appkit) {
-        window.appkit.open()
-      } else {
-        console.warn('AppKit not available')
-      }
+      open()
     } catch (error) {
       console.error('Failed to open AppKit modal:', error)
     }

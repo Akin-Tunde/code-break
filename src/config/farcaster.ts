@@ -63,14 +63,20 @@ export const decodeFarcasterPayload = (payload: string) => {
 export const isFarcasterFrame = () => {
   if (typeof window === 'undefined') return false
   
+  // Don't detect as Frame in localhost development
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return false
+  }
+  
   // Check for Farcaster Frame context
   const userAgent = navigator.userAgent.toLowerCase()
   const isFarcasterApp = userAgent.includes('farcaster') || 
                         userAgent.includes('warpcast') ||
                         window.location.hostname.includes('warpcast')
   
-  // Check for Frame context in parent window
-  const hasFrameParent = !!(window.parent && window.parent !== window)
+  // Check for Frame context in parent window (but not in dev)
+  const hasFrameParent = !!(window.parent && window.parent !== window) && 
+                         !window.location.hostname.includes('localhost')
   
   // Check for Frame-specific URL parameters
   const urlParams = new URLSearchParams(window.location.search)
