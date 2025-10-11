@@ -24,10 +24,10 @@ interface GameState {
 }
 
 const DIFFICULTY_SETTINGS = {
-  easy: { maxAttempts: 12, allowDuplicates: true, timeLimit: 600 }, // 10 minutes
-  normal: { maxAttempts: 10, allowDuplicates: true, timeLimit: 480 }, // 8 minutes
-  hard: { maxAttempts: 8, allowDuplicates: false, timeLimit: 360 }, // 6 minutes
-  expert: { maxAttempts: 6, allowDuplicates: false, timeLimit: 240 }, // 4 minutes
+  easy: { maxAttempts: 8, allowDuplicates: true, timeLimit: 600, codeLength: 4 }, // 10 minutes
+  normal: { maxAttempts: 6, allowDuplicates: true, timeLimit: 480, codeLength: 4 }, // 8 minutes
+  hard: { maxAttempts: 6, allowDuplicates: false, timeLimit: 360, codeLength: 5 }, // 6 minutes
+  expert: { maxAttempts: 5, allowDuplicates: false, timeLimit: 240, codeLength: 5 }, // 4 minutes
 };
 
 export default function GameView() {
@@ -118,9 +118,9 @@ export default function GameView() {
     };
   }, [gameState.startTime, gameState.isGameOver, gameState.difficulty]);
 
-  const generateSecretCode = (allowDuplicates: boolean): number[] => {
+  const generateSecretCode = (allowDuplicates: boolean, codeLength: number): number[] => {
     const code: number[] = [];
-    while (code.length < 4) {
+    while (code.length < codeLength) {
       const num = Math.floor(Math.random() * 10);
       if (allowDuplicates || !code.includes(num)) {
         code.push(num);
@@ -132,7 +132,7 @@ export default function GameView() {
   const startNewGame = (difficulty: Difficulty) => {
     const settings = DIFFICULTY_SETTINGS[difficulty];
     setGameState({
-      secretCode: generateSecretCode(settings.allowDuplicates),
+      secretCode: generateSecretCode(settings.allowDuplicates, settings.codeLength),
       guesses: [],
       currentGuess: [],
       attemptsLeft: settings.maxAttempts,

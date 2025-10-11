@@ -17,7 +17,7 @@ export default function RulesView() {
         </CardHeader>
         <CardContent className="space-y-4 text-muted-foreground">
           <p className="text-sm">
-            Your goal is to crack a secret 4-digit code by making strategic guesses.
+            Your goal is to crack a secret code (4 or 5 digits depending on difficulty) by making strategic guesses.
             After each guess, you'll receive feedback to help you narrow down the
             possibilities.
           </p>
@@ -32,7 +32,7 @@ export default function RulesView() {
           <div className="space-y-2">
             <h3 className="font-semibold text-foreground">1. Make Your Guess</h3>
             <p className="text-sm text-muted-foreground">
-              Select 4 numbers from 0-9 using the number pad. Click Submit when ready.
+              Select numbers from 0-9 using the number pad (4 digits for Easy/Normal, 5 digits for Hard/Expert). Click Submit when ready.
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default function RulesView() {
             <div>
               <div className="font-semibold text-foreground">Easy</div>
               <div className="text-sm text-muted-foreground">
-                12 attempts, duplicates allowed
+                4-digit code, 8 attempts, duplicates allowed
               </div>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function RulesView() {
             <div>
               <div className="font-semibold text-foreground">Normal</div>
               <div className="text-sm text-muted-foreground">
-                10 attempts, duplicates allowed
+                4-digit code, 6 attempts, duplicates allowed
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@ export default function RulesView() {
             <div>
               <div className="font-semibold text-foreground">Hard</div>
               <div className="text-sm text-muted-foreground">
-                8 attempts, no duplicates
+                5-digit code, 6 attempts, no duplicates
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function RulesView() {
             <div>
               <div className="font-semibold text-foreground">Expert</div>
               <div className="text-sm text-muted-foreground">
-                6 attempts, no duplicates
+                5-digit code, 5 attempts, no duplicates
               </div>
             </div>
           </div>

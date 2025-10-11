@@ -23,7 +23,8 @@ const difficulties = [
     name: "Easy",
     icon: Target,
     color: "text-success",
-    attempts: 12,
+    attempts: 8,
+    codeLength: 4,
     duplicates: true,
     description: "Perfect for beginners",
   },
@@ -32,7 +33,8 @@ const difficulties = [
     name: "Normal",
     icon: Zap,
     color: "text-primary",
-    attempts: 10,
+    attempts: 6,
+    codeLength: 4,
     duplicates: true,
     description: "Balanced challenge",
   },
@@ -41,18 +43,20 @@ const difficulties = [
     name: "Hard",
     icon: Flame,
     color: "text-accent",
-    attempts: 8,
+    attempts: 6,
+    codeLength: 5,
     duplicates: false,
-    description: "No duplicate numbers",
+    description: "5-digit code, no duplicates",
   },
   {
     id: "expert" as Difficulty,
     name: "Expert",
     icon: Skull,
     color: "text-destructive",
-    attempts: 6,
+    attempts: 5,
+    codeLength: 5,
     duplicates: false,
-    description: "Only for masters",
+    description: "5-digit code, masters only",
   },
 ];
 
@@ -91,6 +95,9 @@ export const DifficultyModal = ({ isOpen, onClose, onSelect }: DifficultyModalPr
                       {diff.description}
                     </p>
                     <div className="flex gap-2 text-xs">
+                      <span className="px-2 py-1 rounded bg-muted text-muted-foreground">
+                        {diff.codeLength}-digit code
+                      </span>
                       <span className="px-2 py-1 rounded bg-muted text-muted-foreground">
                         {diff.duplicates ? "Duplicates allowed" : "No duplicates"}
                       </span>
