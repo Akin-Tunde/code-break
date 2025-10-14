@@ -7,6 +7,8 @@ interface NumberPadProps {
   onDelete: () => void;
   onSubmit: () => void;
   canSubmit: boolean;
+  codeLength?: number;
+  currentLength?: number;
 }
 
 export const NumberPad = ({
@@ -14,6 +16,8 @@ export const NumberPad = ({
   onDelete,
   onSubmit,
   canSubmit,
+  codeLength = 4,
+  currentLength = 0,
 }: NumberPadProps) => {
   const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -26,6 +30,7 @@ export const NumberPad = ({
             key={num}
             onClick={() => onNumberClick(num)}
             variant="outline"
+            disabled={currentLength >= codeLength}
             className="h-14 text-base font-semibold hover:bg-primary/20 hover:border-primary transition-smooth"
           >
             {num}

@@ -163,9 +163,10 @@ export default function GameView() {
     let partial = 0;
     const secretCopy = [...secret];
     const guessCopy = [...guess];
+    const codeLen = secretCopy.length;
 
     // First pass: count correct positions
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < codeLen; i++) {
       if (guessCopy[i] === secretCopy[i]) {
         correct++;
         secretCopy[i] = -1;
@@ -174,7 +175,7 @@ export default function GameView() {
     }
 
     // Second pass: count correct numbers in wrong positions
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < codeLen; i++) {
       if (guessCopy[i] !== -2) {
         const index = secretCopy.indexOf(guessCopy[i]);
         if (index !== -1) {
@@ -188,7 +189,8 @@ export default function GameView() {
   };
 
   const handleNumberClick = (num: number) => {
-    if (gameState.currentGuess.length < 4 && !gameState.isGameOver) {
+    const codeLen = gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength;
+    if (gameState.currentGuess.length < codeLen && !gameState.isGameOver) {
       setGameState({
         ...gameState,
         currentGuess: [...gameState.currentGuess, num],
@@ -206,13 +208,14 @@ export default function GameView() {
   };
 
   const handleSubmit = () => {
-    if (gameState.currentGuess.length === 4) {
+    const codeLen = gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength;
+    if (gameState.currentGuess.length === codeLen) {
       const feedback = calculateFeedback(gameState.currentGuess, gameState.secretCode);
       const newGuesses = [
         ...gameState.guesses,
         { guess: gameState.currentGuess, feedback },
       ];
-      const isWon = feedback.correct === 4;
+      const isWon = feedback.correct === codeLen;
       const newAttemptsLeft = gameState.attemptsLeft - 1;
       const isGameOver = isWon || newAttemptsLeft === 0;
 
@@ -318,8 +321,9 @@ export default function GameView() {
           {gameState.guesses.map((item, index) => (
             <GuessRow
               key={index}
-              guess={item.guess}
-              feedback={item.feedback}
+                guess={item.guess}
+                feedback={item.feedback}
+                codeLength={gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength}
             />
             ))}
             </div>
@@ -331,17 +335,21 @@ export default function GameView() {
           <h2 className="text-sm font-semibold text-muted-foreground">
             Current Guess
           </h2>
-              <GuessRow guess={gameState.currentGuess} isActive />
+              <GuessRow guess={gameState.currentGuess} isActive codeLength={gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength} />
+              
+              
             </div>
           )}
 
           {/* Number Pad */}
           {!gameState.isGameOver && (
             <NumberPad
-          onNumberClick={handleNumberClick}
-          onDelete={handleDelete}
-          onSubmit={handleSubmit}
-              canSubmit={gameState.currentGuess.length === 4}
+              onNumberClick={handleNumberClick}
+              onDelete={handleDelete}
+              onSubmit={handleSubmit}
+              canSubmit={gameState.currentGuess.length === (gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength)}
+              codeLength={gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength}
+              currentLength={gameState.currentGuess.length}
             />
           )}
 

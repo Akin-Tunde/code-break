@@ -4,9 +4,10 @@ interface GuessRowProps {
   guess?: number[];
   feedback?: { correct: number; partial: number };
   isActive?: boolean;
+  codeLength?: number;
 }
 
-export const GuessRow = ({ guess, feedback, isActive }: GuessRowProps) => {
+export const GuessRow = ({ guess, feedback, isActive, codeLength = 4 }: GuessRowProps) => {
   const getFeedbackForPosition = (index: number): "correct" | "partial" | "none" => {
     if (!feedback || !guess) return "none";
     
@@ -27,7 +28,7 @@ export const GuessRow = ({ guess, feedback, isActive }: GuessRowProps) => {
     >
       {/* Guess Numbers with Feedback Colors Below */}
       <div className="flex gap-1.5 sm:gap-2 flex-1">
-        {[0, 1, 2, 3].map((i) => (
+        {Array.from({ length: codeLength ?? 4 }, (_, i) => i).map((i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <div
               className={cn(
@@ -73,7 +74,7 @@ export const GuessRow = ({ guess, feedback, isActive }: GuessRowProps) => {
           ))}
           {/* Empty pegs */}
           {Array.from({
-            length: 4 - feedback.correct - feedback.partial,
+            length: (codeLength ?? 4) - feedback.correct - feedback.partial,
           }).map((_, i) => (
             <div key={`empty-${i}`} className="w-3 h-3 rounded-full bg-border" />
           ))}
