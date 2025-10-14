@@ -19,6 +19,8 @@ export const GuessRow = ({ guess, feedback, isActive, codeLength = 4 }: GuessRow
 
   return (
     <div
+      role="group"
+      aria-label={isActive ? "Current guess row" : "Previous guess row"}
       className={cn(
         "flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border transition-smooth",
         isActive
@@ -31,6 +33,8 @@ export const GuessRow = ({ guess, feedback, isActive, codeLength = 4 }: GuessRow
         {Array.from({ length: codeLength ?? 4 }, (_, i) => i).map((i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <div
+              tabIndex={0}
+              aria-label={`Position ${i + 1} guess: ${guess?.[i] ?? 'unknown'}`}
               className={cn(
                 "w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-sm sm:text-base font-bold border-2 transition-smooth",
                 guess?.[i] !== undefined
@@ -43,6 +47,8 @@ export const GuessRow = ({ guess, feedback, isActive, codeLength = 4 }: GuessRow
             {/* Feedback indicator below each number */}
             {feedback && (
               <div
+                aria-hidden={!feedback}
+                aria-live="polite"
                 className={cn(
                   "w-2 h-2 rounded-full transition-smooth",
                   getFeedbackForPosition(i) === "correct" && "bg-success glow-success",
