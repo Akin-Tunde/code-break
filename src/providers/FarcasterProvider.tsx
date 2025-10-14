@@ -5,17 +5,24 @@ interface FarcasterProviderProps {
   children: React.ReactNode;
 }
 
+interface FarcasterUser {
+  id?: string;
+  address?: `0x${string}`;
+  displayName?: string | null;
+  [key: string]: unknown;
+}
+
 interface FarcasterContextType {
   isReady: boolean;
   sdk: typeof miniAppSdk;
-  user: any | null;
+  user: FarcasterUser | null;
 }
 
 const FarcasterContext = createContext<FarcasterContextType | null>(null);
 
 export function FarcasterProvider({ children }: FarcasterProviderProps) {
   const [isReady, setIsReady] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<FarcasterUser | null>(null);
 
   useEffect(() => {
     // Initialize the Farcaster Mini App SDK

@@ -3,10 +3,9 @@ pragma solidity ^0.8.20;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/utils/cryptography/ECDSA.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/access/Ownable.sol";
-
-interface IERC20 {
-    function transfer(address to, uint256 amount) external returns (bool);
-}
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/token/ERC20/utils/SafeERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.2/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title ClaimContract
@@ -14,7 +13,9 @@ interface IERC20 {
  * It holds the tokens and releases them only upon receiving a valid signature
  * from a trusted backend server.
  */
-contract ClaimContract is Ownable {
+contract ClaimContract is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+
     address private signerAddress;
     mapping(uint256 => bool) private usedNonces;
 
@@ -25,8 +26,10 @@ contract ClaimContract is Ownable {
      * @param _initialOwner The address that will own this contract (your wallet).
      * @param _signerAddress The public address of the backend server's wallet.
      */
-    constructor(address _initialOwner, address _signerAddress) Ownable(_initialOwner) {
+    constructor(address _initialOwner, address _signerAddress) Ownable() {
         signerAddress = _signerAddress;
+        // Transfer ownership to the provided initial owner
+        transferOwnership(_initialOwner);
     }
 
     /**
@@ -41,19 +44,21 @@ contract ClaimContract is Ownable {
         uint256 amount,
         uint256 nonce,
         bytes memory signature
-    ) external {
+    ) external nonReentrant {
+        require(tokenContract != address(0), "ClaimContract: tokenContract is zero address");
+        require(amount > 0, "ClaimContract: amount must be > 0");
         require(!usedNonces[nonce], "ClaimContract: Nonce has already been used.");
 
         // We construct the message hash. This must be IDENTICAL to how the backend creates it.
         bytes32 messageHash = keccak256(abi.encodePacked(msg.sender, tokenContract, amount, nonce));
+        bytes32 ethSignedMessageHash = ECDSA.toEthSignedMessageHash(messageHash);
 
-        // Use the simplified ECDSA.recover function. It handles the Ethereum Signed Message hash internally.
-        address recoveredAddress = ECDSA.recover(messageHash, signature);
+        address recoveredAddress = ECDSA.recover(ethSignedMessageHash, signature);
 
         require(recoveredAddress == signerAddress, "ClaimContract: Invalid signature.");
 
         usedNonces[nonce] = true;
-        IERC20(tokenContract).transfer(msg.sender, amount);
+        IERC20(tokenContract).safeTransfer(msg.sender, amount);
         emit RewardClaimed(msg.sender, tokenContract, amount, nonce);
     }
 
@@ -64,6 +69,7 @@ contract ClaimContract is Ownable {
     }
 
     function withdrawTokens(address tokenContract, address to, uint256 amount) external onlyOwner {
-        IERC20(tokenContract).transfer(to, amount);
+        require(tokenContract != address(0), "ClaimContract: tokenContract is zero address");
+        IERC20(tokenContract).safeTransfer(to, amount);
     }
 }
