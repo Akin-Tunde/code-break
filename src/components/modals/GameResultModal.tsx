@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -56,7 +55,7 @@ export const GameResultModal = ({
               <span className="text-destructive">Game Over</span>
             )}
           </DialogTitle>
-          <DialogDescription id="game-result-desc" className="text-center space-y-4">
+          <div id="game-result-desc" className="text-center space-y-4">
             {isWon ? (
               <div className="space-y-2">
                 <p>Congratulations! You solved it in {attempts} tries!</p>
@@ -82,7 +81,7 @@ export const GameResultModal = ({
                 ))}
               </div>
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <div className="flex flex-col sm:flex-row gap-3 mt-4">
