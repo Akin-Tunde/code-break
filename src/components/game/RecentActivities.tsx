@@ -42,8 +42,8 @@ export const RecentActivities = ({ activities }: RecentActivitiesProps) => {
     );
   }
 
-  // Show the most recent 4 activities
-  const recentFour = activities.slice(0, 4);
+  // Show the most recent 3 activities
+  const recentThree = activities.slice(0, 3);
 
   return (
     <Card className="border-border/50">
@@ -54,8 +54,8 @@ export const RecentActivities = ({ activities }: RecentActivitiesProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          {recentFour.map((activity, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {recentThree.map((activity, index) => (
             <div
               key={activity.id}
               className="animate-fade-in"
@@ -98,10 +98,10 @@ export const RecentActivities = ({ activities }: RecentActivitiesProps) => {
         </div>
         
         {/* Show total count if there are more activities */}
-        {activities.length > 4 && (
+        {activities.length > 3 && (
           <div className="text-center mt-2">
             <p className="text-xs text-muted-foreground">
-              Showing {recentFour.length} of {activities.length} recent activities
+              Showing {recentThree.length} of {activities.length} recent activities
             </p>
           </div>
         )}
