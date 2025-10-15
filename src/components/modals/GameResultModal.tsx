@@ -34,7 +34,7 @@ export const GameResultModal = ({
   };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent aria-labelledby="game-result-title" aria-describedby="game-result-desc" className="sm:max-w-md">
         <DialogHeader>
           <div className="flex justify-center mb-4">
             {isWon ? (
@@ -47,7 +47,7 @@ export const GameResultModal = ({
               </div>
             )}
           </div>
-          <DialogTitle className="text-xl text-center">
+          <DialogTitle id="game-result-title" className="text-xl text-center">
             {isWon ? (
               <span className="bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
                 Code Cracked!
@@ -56,7 +56,7 @@ export const GameResultModal = ({
               <span className="text-destructive">Game Over</span>
             )}
           </DialogTitle>
-          <DialogDescription className="text-center space-y-4">
+          <DialogDescription id="game-result-desc" className="text-center space-y-4">
             {isWon ? (
               <div className="space-y-2">
                 <p>Congratulations! You solved it in {attempts} tries!</p>

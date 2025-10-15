@@ -4,15 +4,17 @@ import { NumberPad } from "@/components/game/NumberPad";
 import { Button } from "@/components/ui/button";
 import { DifficultyModal } from "@/components/modals/DifficultyModal";
 import { GameResultModal } from "@/components/modals/GameResultModal";
+import { toast } from "@/hooks/use-toast";
+import { useCallback } from "react";
 import { TreasuryPool } from "@/components/game/TreasuryPool";
 import { RecentActivities } from "@/components/game/RecentActivities";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, Eye, EyeOff } from "lucide-react";
 
 type Difficulty = "easy" | "normal" | "hard" | "expert";
 
 interface GameState {
   secretCode: number[];
-  guesses: { guess: number[]; feedback: { correct: number; partial: number } }[];
+  guesses: { guess: number[]; feedback: { correct: number; partial: number; status?: Array<'correct' | 'partial' | 'none'> } }[];
   currentGuess: number[];
   attemptsLeft: number;
   maxAttempts: number;
@@ -84,6 +86,8 @@ export default function GameView() {
     startTime: null,
     elapsedTime: 0,
   });
+  const [announce, setAnnounce] = useState<string | null>(null);
+  const [showSecret, setShowSecret] = useState(false);
 
   // Countdown timer effect
   useEffect(() => {
@@ -158,58 +162,84 @@ export default function GameView() {
     return Math.max(0, settings.timeLimit - gameState.elapsedTime);
   };
 
-  const calculateFeedback = (guess: number[], secret: number[]) => {
-    let correct = 0;
-    let partial = 0;
-    const secretCopy = [...secret];
-    const guessCopy = [...guess];
-    const codeLen = secretCopy.length;
+  // Clear announce after brief interval so SR reads repeated messages
+  useEffect(() => {
+    if (!announce) return;
+    const t = setTimeout(() => setAnnounce(null), 2000);
+    return () => clearTimeout(t);
+  }, [announce]);
 
-    // First pass: count correct positions
+  // DEBUG: temporary console log to observe currentGuess updates
+  useEffect(() => {
+    console.log("[debug] currentGuess:", gameState.currentGuess);
+  }, [gameState.currentGuess]);
+
+  // Returns counts and per-position status for precise feedback
+  const calculateFeedback = (guess: number[], secret: number[]) => {
+    const codeLen = secret.length;
+    const status: Array<'correct' | 'partial' | 'none'> = Array(codeLen).fill('none');
+    const secretCopy = [...secret];
+
+    // First pass: mark correct positions
     for (let i = 0; i < codeLen; i++) {
-      if (guessCopy[i] === secretCopy[i]) {
-        correct++;
-        secretCopy[i] = -1;
-        guessCopy[i] = -2;
+      if (guess[i] === secretCopy[i]) {
+        status[i] = 'correct';
+        secretCopy[i] = -1; // consume
       }
     }
 
-    // Second pass: count correct numbers in wrong positions
+    // Second pass: mark partials (correct number, wrong position)
     for (let i = 0; i < codeLen; i++) {
-      if (guessCopy[i] !== -2) {
-        const index = secretCopy.indexOf(guessCopy[i]);
-        if (index !== -1) {
-          partial++;
-          secretCopy[index] = -1;
+      if (status[i] === 'none') {
+        const idx = secretCopy.indexOf(guess[i]);
+        if (idx !== -1) {
+          status[i] = 'partial';
+          secretCopy[idx] = -1; // consume
         }
       }
     }
 
-    return { correct, partial };
+    const correct = status.filter((s) => s === 'correct').length;
+    const partial = status.filter((s) => s === 'partial').length;
+
+    return { correct, partial, status };
   };
 
-  const handleNumberClick = (num: number) => {
+  const handleNumberClick = useCallback((num: number) => {
     const codeLen = gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength;
     if (gameState.currentGuess.length < codeLen && !gameState.isGameOver) {
-      setGameState({
-        ...gameState,
-        currentGuess: [...gameState.currentGuess, num],
-      });
+      setGameState((prev) => ({
+        ...prev,
+        currentGuess: [...prev.currentGuess, num],
+      }));
     }
-  };
+  }, [gameState.secretCode.length, gameState.currentGuess.length, gameState.isGameOver, gameState.difficulty]);
 
-  const handleDelete = () => {
-    if (gameState.currentGuess.length > 0) {
-      setGameState({
-        ...gameState,
-        currentGuess: gameState.currentGuess.slice(0, -1),
-      });
-    }
-  };
+  const handleDelete = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      currentGuess: prev.currentGuess.slice(0, -1),
+    }));
+  }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     const codeLen = gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength;
     if (gameState.currentGuess.length === codeLen) {
+      // Validate duplicates rule
+      const settings = DIFFICULTY_SETTINGS[gameState.difficulty!];
+      if (!settings.allowDuplicates) {
+        const seen = new Set<number>();
+        for (const n of gameState.currentGuess) {
+          if (seen.has(n)) {
+            // show accessible toast/announcement
+            toast({ title: "Invalid guess", description: "Duplicates are not allowed on this difficulty" });
+            setAnnounce("Invalid guess: duplicates are not allowed");
+            return;
+          }
+          seen.add(n);
+        }
+      }
+
       const feedback = calculateFeedback(gameState.currentGuess, gameState.secretCode);
       const newGuesses = [
         ...gameState.guesses,
@@ -219,25 +249,49 @@ export default function GameView() {
       const newAttemptsLeft = gameState.attemptsLeft - 1;
       const isGameOver = isWon || newAttemptsLeft === 0;
 
-      setGameState({
-        ...gameState,
+      setGameState((prev) => ({
+        ...prev,
         guesses: newGuesses,
         currentGuess: [],
         attemptsLeft: newAttemptsLeft,
         isGameOver,
         isWon,
-      });
+      }));
+
+      // Announce feedback for screen readers
+      setAnnounce(`Feedback: ${feedback.correct} correct, ${feedback.partial} partial`);
 
       if (isGameOver) {
         setTimeout(() => setShowResultModal(true), 500);
       }
     }
-  };
+  }, [gameState]);
 
   const handlePlayAgain = () => {
     setShowResultModal(false);
     setShowDifficultyModal(true);
   };
+
+  // Keyboard support: number keys, Backspace, Enter
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!gameState.difficulty || gameState.isGameOver) return;
+      const key = e.key;
+      if (/^[0-9]$/.test(key)) {
+        e.preventDefault();
+        handleNumberClick(Number(key));
+      } else if (key === "Backspace") {
+        e.preventDefault();
+        handleDelete();
+      } else if (key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleNumberClick, handleDelete, handleSubmit, gameState.difficulty, gameState.isGameOver]);
 
   if (!gameState.difficulty) {
     return (
@@ -302,7 +356,7 @@ export default function GameView() {
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Clock className="h-4 w-4 text-secondary" />
-          <span className={`font-bold font-mono ${getRemainingTime() < 60 ? 'text-destructive' : 'text-secondary'}`}>
+          <span aria-live="polite" className={`font-bold font-mono ${getRemainingTime() < 60 ? 'text-destructive' : 'text-secondary'}`}>
             {formatTime(getRemainingTime())}
           </span>
         </div>
@@ -312,6 +366,21 @@ export default function GameView() {
             {gameState.difficulty}
           </span>
           </div>
+          {/* Reveal secret (dev only or when VITE_SHOW_SECRET=true) */}
+          {(import.meta.env.DEV || import.meta.env.VITE_SHOW_SECRET === 'true') && (
+            <div className="ml-2">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 px-2 py-1 rounded-md border bg-background text-sm"
+                onClick={() => setShowSecret((s) => !s)}
+                aria-pressed={showSecret}
+                aria-label={showSecret ? 'Hide secret code' : 'Reveal secret code'}
+              >
+                {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <span className="sr-only">{showSecret ? 'Hide secret' : 'Reveal secret'}</span>
+              </button>
+            </div>
+          )}
           </div>
 
           {/* Guess History */}
@@ -338,6 +407,13 @@ export default function GameView() {
               <GuessRow guess={gameState.currentGuess} isActive codeLength={gameState.secretCode.length || DIFFICULTY_SETTINGS[gameState.difficulty!].codeLength} />
               
               
+            </div>
+          )}
+
+          {showSecret && gameState.secretCode.length > 0 && (
+            <div className="mt-2 text-sm">
+              <span className="text-muted-foreground">Secret code:</span>
+              <span className="ml-2 font-mono font-bold">{gameState.secretCode.join(' ')}</span>
             </div>
           )}
 
@@ -381,6 +457,10 @@ export default function GameView() {
             elapsedTime={gameState.elapsedTime}
             onPlayAgain={handlePlayAgain}
           />
+          {/* Screen reader live region for short announcements */}
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {announce}
+          </div>
         </div>
       </div>
     </div>

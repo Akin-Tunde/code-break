@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScoreRow } from "@/components/leaderboard/ScoreRow";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Users, Target, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Difficulty = "easy" | "normal" | "hard" | "expert";
 
@@ -38,6 +39,13 @@ const mockLeaderboard: Record<Difficulty, PlayerScore[]> = {
 
 export default function LeaderboardView() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("normal");
+  const [loading, setLoading] = useState(true);
+
+  // Simulate network loading for a11y skeleton
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const getCurrentStats = () => {
     const currentData = mockLeaderboard[selectedDifficulty];
@@ -69,7 +77,15 @@ export default function LeaderboardView() {
       </div>
 
       {/* Statistics Cards */}
-      {stats && (
+      {loading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+        </div>
+      ) : (
+        stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card className="border-border/50">
             <CardHeader className="pb-2">
@@ -119,6 +135,7 @@ export default function LeaderboardView() {
             </CardContent>
           </Card>
         </div>
+        )
       )}
 
       <Tabs

@@ -2,15 +2,19 @@ import { cn } from "@/lib/utils";
 
 interface GuessRowProps {
   guess?: number[];
-  feedback?: { correct: number; partial: number };
+  // backward-compatible: feedback may include counts
+  feedback?: { correct: number; partial: number; status?: Array<'correct' | 'partial' | 'none'> };
   isActive?: boolean;
   codeLength?: number;
 }
 
 export const GuessRow = ({ guess, feedback, isActive, codeLength = 4 }: GuessRowProps) => {
   const getFeedbackForPosition = (index: number): "correct" | "partial" | "none" => {
+    // If per-position status array is provided, prefer it (accurate mapping)
+    if (feedback?.status && feedback.status[index]) return feedback.status[index];
+
+    // Fallback: old count-based behavior (first N correct, next M partial)
     if (!feedback || !guess) return "none";
-    
     const totalFeedback = feedback.correct + feedback.partial;
     if (index < feedback.correct) return "correct";
     if (index < totalFeedback) return "partial";

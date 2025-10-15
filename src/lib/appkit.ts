@@ -62,6 +62,8 @@ createAppKit({
     '--w3m-border-radius-master': '12px'
   },
   features: {
-    analytics: true, // Enable analytics (optional)
+    // Analytics can cause network errors in local/dev environments if the
+    // remote endpoint is unreachable. Make analytics opt-in via env var.
+    analytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   },
 });

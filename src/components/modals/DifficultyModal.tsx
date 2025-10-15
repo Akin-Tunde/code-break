@@ -79,6 +79,11 @@ export const DifficultyModal = ({ isOpen, onClose, onSelect }: DifficultyModalPr
             return (
               <Card
                 key={diff.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") onSelect(diff.id);
+                }}
                 className="p-4 cursor-pointer hover:bg-card/50 transition-smooth border-border hover:border-primary/50"
                 onClick={() => onSelect(diff.id)}
               >

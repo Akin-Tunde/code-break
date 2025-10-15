@@ -31,6 +31,7 @@ export const NumberPad = ({
             onClick={() => onNumberClick(num)}
             variant="outline"
             disabled={currentLength >= codeLength}
+            aria-label={`Number ${num}`}
             className="h-14 text-base font-semibold hover:bg-primary/20 hover:border-primary transition-smooth"
           >
             {num}
@@ -44,6 +45,7 @@ export const NumberPad = ({
           onClick={onDelete}
           variant="destructive"
           className="h-12"
+          aria-label="Delete last digit"
         >
           <Delete className="mr-2 h-4 w-4" />
           Delete
@@ -51,6 +53,7 @@ export const NumberPad = ({
         <Button
           onClick={onSubmit}
           disabled={!canSubmit}
+          aria-label="Submit guess"
           className={cn(
             "h-12",
             canSubmit && "gradient-primary glow-primary"
