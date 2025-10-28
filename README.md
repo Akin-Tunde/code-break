@@ -4,7 +4,6 @@
 ChainBreaker is an engaging, Mastermind-style code-breaking game designed to test your logic and deduction skills. The objective is to guess a secret 4-digit code within a set number of attempts and a time limit. With a sleek, modern interface and multiple difficulty levels, ChainBreaker offers a challenging experience for players of all skill levels.
 
 This project is built with a modern technology stack, featuring a responsive design that works seamlessly on both desktop and mobile devices. It also includes placeholder features for future blockchain integration, allowing for on-chain scorekeeping and wallet connectivity.
-
 ## Features
 
 *   **Classic Code-Breaking Gameplay**: Guess a secret 4-digit code using logic and feedback.
